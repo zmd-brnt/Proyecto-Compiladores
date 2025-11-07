@@ -24,6 +24,11 @@ vacio principal() [
 
     para (i = 0; [i < $suma(i; x)]; i += 1) {
         mensaje = ¿Hola Mundo?.
+        si [ i :: 0 ] {
+            mensaje = ¿i es 0?.
+        } ocaso {
+            mensaje = ¿i no es 0?.
+        }
     }
 
     hacer {

@@ -3,17 +3,21 @@
 %option noyywrap
 %option 8bit
     
-
 %{
 /*
   Analizador Léxico + Sintáctico Descendente Recursivo
   Proyecto: Analizador Sintáctico
   Autores: Franco Ramirez Christian, Pérez Paitán Brent Armando
-  Fecha : 2025-11-08 (correcciones aplicadas)
+  Fecha : 2025-11-08
 
-  Nota: este es un archivo de Flex (lexer) que contiene también
-  las rutinas del parser (C). Genera tokens/tablas, construye
-  la cadena de átomos y ejecuta un parser descendente recursivo.
+  Descripción:
+  - Analizador léxico en Flex que genera tokens y tablas (identificadores,
+    literales reales y cadenas).
+  - Genera la cadena de átomos (atoms[]) que alimenta el parser recursivo.
+  - Contiene un parser descendente recursivo que informa errores sintácticos
+    indicando el átomo/token donde aparecieron.
+  - Resultado final: impresión de tablas, tokens, cadena de átomos y si el
+    programa fuente es sintácticamente correcto.
 */
 
 #include <stdio.h>
@@ -29,7 +33,7 @@
 
 typedef struct {
     int clase;      /* clase léxica */
-    char *valor;    /* valor semántico (índice en tabla o literal) */
+    char *valor;    /* valor semántico (índice en tabla o ascii) */
     char *etm;      /* lexema original */
 } Token;
 
@@ -48,7 +52,7 @@ int n_litreal = 0;
 
 /* Clases léxicas */
 enum {
-    C_PALRES=0,  /* palabra reservada -> valor será número de clave (string) */
+    C_PALRES=0,  
     C_INT=1,
     C_ID=2,
     C_OPASIG=3,
@@ -61,7 +65,7 @@ enum {
 };
 
 /* variables para los átomos / parser */
-char *atoms = NULL;   /* atoms[i] es char átomo */
+char *atoms = NULL;   
 int atom_count = 0;
 int atom_pos = 0;
 int syntax_errors = 0;
@@ -124,7 +128,7 @@ char *add_litreal(const char *s) {
     return strdup_safe(tmp);
 }
 
-/* Añadir token genérico */
+/* Añadir token */
 void add_token_int(int clase, const char *valor, const char *lex) {
     if (n_tokens >= MAX_TOKENS) { fprintf(stderr,"Demasiados tokens\n"); exit(1); }
     tokens[n_tokens].clase = clase;
@@ -137,7 +141,7 @@ void add_token_int(int clase, const char *valor, const char *lex) {
 void print_tables() {
     printf("\n=== TOKENS (%d) ===\n", n_tokens);
     for (int i=0;i<n_tokens;i++) {
-        printf("%4d) clase=%d  valor='%s'  lex='%s'\n", i, tokens[i].clase, tokens[i].valor, tokens[i].etm);
+        printf("%4d)\tclase=%d    valor='%s'\t lex='%s'\n", i, tokens[i].clase, tokens[i].valor, tokens[i].etm);
     }
     printf("\n=== IDENTIFICADORES (%d) ===\n", n_idents);
     for (int i=0;i<n_idents;i++) printf("%4d) %s\n", i, idents[i]);
@@ -182,9 +186,9 @@ char token_to_atom(int clase, const char *valor, const char *lex) {
         }
     } else if (clase == C_OPASIG) {
         int code = atoi(valor);
-        /* mapear códigos de op asignación (según las reglas del lexer) */
+        /* mapear códigos de op asignación  */
         switch(code) {
-            case 0: return '=';   /* asignación simple */
+            case 0: return '=';   /* = */
             case 1: return 'd';   /* *= */
             case 2: return 'j';   /* /= */
             case 3: return 'u';   /* += */
@@ -205,7 +209,7 @@ char token_to_atom(int clase, const char *valor, const char *lex) {
         }
     } else if (clase == C_OPLOG) {
         int code = atoi(valor);
-        /* 0 AND,1 OR,2 NOT (mapeo interno) */
+        /* 0 AND,1 OR,2 NOT  */
         switch(code) {
             case 0: return '\\'; case 1: return 'b'; case 2: return '#';
         }
@@ -248,7 +252,7 @@ void print_error_loc(int pos) {
 }
 
 /* ------------------ Prototipos de todas las funciones del parser -------------- */
-/* (Se mantienen los mismos nombres que en tu diseño original) */
+
 void Program(); void otraFunc(); void Func(); void listArg(); void otroArg();
 void cuerpo(); void listaDec(); void sent_decl(); void tipo_fn();
 void lista_id(); void resto_lista_id(); void asig_val(); void constante_fn();
@@ -260,9 +264,6 @@ void expr_fn(); void salir_fn(); void valRet_fn(); void select_fn(); void siguie
 void listP_fn(); void Param_fn();
 
 /* ------------------ Implementación de las funciones del parser --------------- */
-
-/* (Se respetó la estructura/gramática que proporcionaste; sólo ajusté
-   llamados a peek/advance/syn_error para usar las funciones definidas) */
 
 void Program() {
     char p = peek_atom();
@@ -480,7 +481,7 @@ void LlamaFunc() {
     }
 }
 
-/* ---------------- ASIGNACIONES y operadores ---------------- */
+/* ---------------- ASIGNACIONES y OPERADORES ---------------- */
 
 void asig() {
     if (peek_atom()=='a') {
@@ -728,12 +729,9 @@ void Param_fn() {
     } else return;
 }
 
-/* ---------- LEXER (Flex rules) ---------- */
-/* Reglas: keywords, identificadores, enteros, reales, strings, operadores y símbolos */
-
 %}
+/* ---------- REGLAS DE FLEX -> ANALIZADOR LEXICO ---------- */
 
-/* Definiciones de patrones */
 DIGIT       [0-9]
 LETTER      [a-z]
 UNDER       _
@@ -742,7 +740,6 @@ INT         ([+-])?{DIGIT}+
 REAL        ([+-])?{DIGIT}+@{DIGIT}+(@@([+-])?{DIGIT}+)? 
 STRING      ¿[^¿\?\n]*\?
 
-/* Reglas */
 %%
 [ \t\r\n]+                  { /* ignorar espacios y nueva línea */ }
 
@@ -774,33 +771,33 @@ STRING      ¿[^¿\?\n]*\?
 "|="                        { add_token_int(C_OPASIG, "10", yytext); }
 "="                         { add_token_int(C_OPASIG, "0", yytext); }
 
-"¬+¬"                       { add_token_int(C_OPARIT, "0", yytext); } /* + */
-"¬-¬"                       { add_token_int(C_OPARIT, "1", yytext); } /* - */
-"¬*¬"                       { add_token_int(C_OPARIT, "2", yytext); } /* * */
-"¬/¬"                       { add_token_int(C_OPARIT, "3", yytext); } /* / */
-"¬^¬"                       { add_token_int(C_OPARIT, "4", yytext); } /* ^ */
-"¬%¬"                       { add_token_int(C_OPARIT, "5", yytext); } /* % */
+"¬+¬"                       { add_token_int(C_OPARIT, "0", yytext); } 
+"¬-¬"                       { add_token_int(C_OPARIT, "1", yytext); } 
+"¬*¬"                       { add_token_int(C_OPARIT, "2", yytext); } 
+"¬/¬"                       { add_token_int(C_OPARIT, "3", yytext); } 
+"¬^¬"                       { add_token_int(C_OPARIT, "4", yytext); } 
+"¬%¬"                       { add_token_int(C_OPARIT, "5", yytext); } 
 
-"::"                        { add_token_int(C_OPREL, "0", yytext); } /* == */
-"¿:"                        { add_token_int(C_OPREL, "1", yytext); } /* != */
+"::"                        { add_token_int(C_OPREL, "0", yytext); } 
+"¿:"                        { add_token_int(C_OPREL, "1", yytext); } 
 ">"                         { add_token_int(C_OPREL, "2", yytext); }
 "<"                         { add_token_int(C_OPREL, "3", yytext); }
-">:"                        { add_token_int(C_OPREL, "4", yytext); } /* >=? (según gramática) */
-"<:"                        { add_token_int(C_OPREL, "5", yytext); } /* <=? (según gramática) */
+">:"                        { add_token_int(C_OPREL, "4", yytext); } 
+"<:"                        { add_token_int(C_OPREL, "5", yytext); } 
 
-"\\\\"                      { add_token_int(C_OPLOG, "0", yytext); }  /* AND (represented by \\) */
-"//"                        { add_token_int(C_OPLOG, "1", yytext); }   /* OR (represented by //) */
-"\|\|"                      { add_token_int(C_OPLOG, "2", yytext); }   /* NOT (represented by || en mapeo) */
+"\\\\"                      { add_token_int(C_OPLOG, "0", yytext); } 
+"//"                        { add_token_int(C_OPLOG, "1", yytext); } 
+"\|\|"                      { add_token_int(C_OPLOG, "2", yytext); } 
 
-"("                         { add_token_int(C_SIMB, NULL, yytext); }
-")"                         { add_token_int(C_SIMB, NULL, yytext); }
-"{"                         { add_token_int(C_SIMB, NULL, yytext); }
-"}"                         { add_token_int(C_SIMB, NULL, yytext); }
-"["                         { add_token_int(C_SIMB, NULL, yytext); }
-"]"                         { add_token_int(C_SIMB, NULL, yytext); }
-"$"                         { add_token_int(C_SIMB, NULL, yytext); }
-"."                         { add_token_int(C_SIMB, NULL, yytext); }
-";"                         { add_token_int(C_SIMB, NULL, yytext); }
+"("                         { add_token_int(C_SIMB, "40", yytext); }
+")"                         { add_token_int(C_SIMB, "41", yytext); }
+"{"                         { add_token_int(C_SIMB, "123", yytext); }
+"}"                         { add_token_int(C_SIMB, "125", yytext); }
+"["                         { add_token_int(C_SIMB, "91", yytext); }
+"]"                         { add_token_int(C_SIMB, "93", yytext); }
+"$"                         { add_token_int(C_SIMB, "36", yytext); }
+"."                         { add_token_int(C_SIMB, "46", yytext); }
+";"                         { add_token_int(C_SIMB, "59", yytext); }
 
 {REAL}                      {
                                 char *idx = add_litreal(yytext);
@@ -810,7 +807,7 @@ STRING      ¿[^¿\?\n]*\?
                                 add_token_int(C_INT, yytext, yytext);
                             }
 {STRING}                    {
-                                /* quitar comillas al almacenar */
+                                /* quitar los simbolos de cadena (¿,?) al almacenar */
                                 int L = yyleng;
                                 char *tmp = malloc(L-1);
                                 if (!tmp) { fprintf(stderr,"malloc fallo\n"); exit(1); }
@@ -829,7 +826,7 @@ STRING      ¿[^¿\?\n]*\?
 
 %%
 
-/* ---------- driver del parser / main ---------- */
+/* ---------- Driver del Parser / main ---------- */
 
 void parse_driver() {
     /* construir atoms y lanzar parser */
@@ -870,5 +867,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-
-/* Fin del archivo */
