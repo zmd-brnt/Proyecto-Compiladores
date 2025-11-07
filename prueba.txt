@@ -1,0 +1,48 @@
+entero suma(entero a_1; entero b_1) [                       
+    entero resultado = 0; res_2 = 1.
+    resultado = a_1 ¬+¬ b_1.
+    salir resultado.
+]
+
+vacio principal() [
+    cadena mensaje = ¿Inicio del programa?.
+    entero x = -5.
+    flotante y = -3@14.
+    entero i = 0.
+
+    hacer {
+        x += 1.
+        i += 1.
+    } mientras [ x < 10 ].
+
+    si [ x > y ] {
+        mensaje = ¿x es mayor que y?.
+    } ocaso {
+        mensaje = ¿x no es mayor?.
+    }
+
+
+    para (i = 0; [i < $suma(i; x)]; i += 1) {
+        mensaje = ¿Hola Mundo?.
+    }
+
+    hacer {
+        x += 1.
+        i += 1.
+    } mientras {[ x < 10 ] \\ [i ¿: 0]}.
+
+    select (x) {
+        caso 1 {
+            mensaje = ¿Caso uno?.
+        }
+        caso 2 {
+            mensaje = ¿Caso dos?.
+        }
+        predet {
+            mensaje = ¿Caso por defecto?.
+        }
+    }
+
+    salir.
+]
+
