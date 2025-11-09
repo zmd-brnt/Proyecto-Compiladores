@@ -1,14 +1,14 @@
-%option yylineno
-%option nodefault
-%option noyywrap
-%option 8bit
-    
 %{
 /*
   Analizador Léxico + Sintáctico Descendente Recursivo
   Proyecto: Analizador Sintáctico
-  Autores: Franco Ramirez Christian, Pérez Paitán Brent Armando
+  Autores: Franco Ramírez Christian, Pérez Paitán Brent Armando
   Fecha : 2025-11-08
+
+  Objetivo
+    Construir, en un mismo programa, los analizadores Léxico y Sintáctico Descendente
+    Recursivo que revisen programas escritos en el lenguaje definido por la gramática 
+    del Anexo A del documento.
 
   Descripción:
   - Analizador léxico en Flex que genera tokens y tablas (identificadores,
@@ -730,6 +730,7 @@ void Param_fn() {
 }
 
 %}
+
 /* ---------- REGLAS DE FLEX -> ANALIZADOR LEXICO ---------- */
 
 DIGIT       [0-9]
@@ -866,4 +867,9 @@ int main(int argc, char **argv) {
     parse_driver();
 
     return 0;
+}
+
+/* ---------- CORRECCIÓN DE WARNING yywrap ---------- */
+int yywrap(void) {
+    return 1;
 }
