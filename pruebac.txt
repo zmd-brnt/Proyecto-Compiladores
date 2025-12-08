@@ -1,0 +1,55 @@
+flotante sumar(entero a; entero b) [
+    entero resultado .
+    resultado = a ¬+¬ b .
+    salir .
+]
+
+vacio principal()[
+
+    "Declaraciones"
+    entero x; y = 5; z .
+    flotante r = 3@14 .
+    cadena msg = ¿Hola mundo? .
+
+    "Asignaciones simples y combinadas "
+    x = 10 .
+    x += 2 .
+    r %= 2@0@@-2 .
+
+    " SI / OCASO "
+    si [ x :: 12 ] {
+        hacer {
+            x = x ¬-¬ 1 .
+        } mientras [ x > 0 ] .
+    } ocaso {
+        x = 0 .
+    }
+
+    "SI con operador lógico binario "
+    si { [x >: 0] \\ [x <: 100] } {
+        msg = ¿en rango? .
+    } ocaso {
+        msg = ¿fuera de rango? .
+    }
+
+    "SI con operador lógico unario "
+    si || { [msg >: ¿hola?] } {
+        msg = ¿negado? .
+    } ocaso {
+        msg = ¿no negado? .
+    }
+    
+    "PARA "
+    para ( x = 1 ; [ x <: 5 ] ; x += 1 ) {
+         "LLAMADA A FUNCIÓN "
+          x = $sumar(1; 2) .
+        
+        }
+    select (x) {
+            caso 1  { msg = ¿uno? . }
+            caso 2  { msg = ¿dos? . }
+            predet  { msg = ¿otro? . }
+     }
+
+       
+]
