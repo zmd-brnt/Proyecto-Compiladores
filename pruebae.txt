@@ -1,0 +1,55 @@
+entero sumar(entero a; entero b) [
+
+    entero r .
+    r = a ¬+¬ b .
+    salir .
+
+]
+
+vacio principal()[
+
+    entero x; y; z .
+    cadena msg = ¿hola? .
+    flotante t = 1@5@@-3.
+
+    x = 10 .
+    x += 2 .
+    t %= 0@5 .
+
+    "ERROR 1: condición relacional usa '=' en vez de operador relacional"
+    si [ x = 10 ] {
+        msg = ¿igual? .
+    } ocaso {
+        msg = ¿no? .
+    }
+
+    "ERROR 2: select con 'caso' usando cadena (tu parser espera ENTERO)"
+    select (x) {
+        caso ¿dos? {           "<--- inválido, debería ser un entero"
+            x = 2 .
+        }
+        predet { x = 0 . }
+    }
+
+    " ERROR 3: llamada de función suelta (tu gramática no la admite como sentencia)"
+    $sumar(x; y) .              "<--- usa una asignación si quieres que pase:  x = $sumar(x; y) ."
+
+    "ERROR 4: para con paréntesis incompletos / separadores"
+    para ( x = 0 [ x <: 5 ; x += 1 ) {
+        x += 1 .
+    }
+
+    " ERROR 5: expresión lógica unaria mal formada (usa '[' donde debería ir '{')"
+    si || [ x ¿: 10 ] {
+        x += 1 .
+    } ocaso {
+        x = 0 .
+    }
+
+    " ERROR 6: bloque y corchetes desbalanceados (falta ']' de expRel)"
+    si [ (x + 2) > 3 {          " <--- falta el ']' antes de '{'"
+        x += 1 .
+    } ocaso {
+        x = 0 .
+    }
+]
